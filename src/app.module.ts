@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ActivitiesModule } from "./activities/activities.module"; 
+import { ActivitiesModule } from "./modules/activities/activities.module";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from "./config/typeorm.config";
-import { BooksModule } from './books/books.module';
+import { BooksModule } from './modules/books/books.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot(typeOrmConfig), ActivitiesModule, BooksModule],

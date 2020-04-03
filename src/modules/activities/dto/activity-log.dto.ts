@@ -11,5 +11,5 @@ export class ActivityLogDto {
     time: number;
 
     @IsOptional() // allow optional for backtracking dates, otherwise, use current date
-    date: Date;
+    date: Date | string;
 }

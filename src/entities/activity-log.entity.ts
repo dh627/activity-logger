@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Moment } from "moment";
 
 @Entity()
 export class ActivityLog {
@@ -20,9 +21,11 @@ export class ActivityLog {
     })
     time: number | null;
 
-    @Column("date", {
+    @Column("timestamp", {
         name: "date",
+        default: () => 'NOW()',
         nullable: false
     })
-    date: Date;
+    date: string | Date;
+
 }

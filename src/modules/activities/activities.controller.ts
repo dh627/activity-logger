@@ -3,12 +3,27 @@ import { ActivitiesService } from './activities.service';
 import { ActivityList } from 'src/entities/activity-list.entity';
 import { DeleteResult } from 'typeorm';
 import { ActivityListDto } from './dto/activity-list.dto';
+import { ActivityLog } from 'src/entities/activity-log.entity';
+import { ActivityLogDto } from './dto/activity-log.dto';
 
 @Controller('activities')
 export class ActivitiesController {
     constructor(private readonly activitiesService: ActivitiesService) {}
+    @Post("activitylog")
+    async postActivityLog(@Body() activityLogDto: ActivityLogDto): Promise<ActivityLog> {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const activity = await this.findActivity(activityLogDto.activityId);
+        return await this.activitiesService.postActivityLog(activityLogDto);
+    }
+
+    // this has been moved to the top as it was causing issues being further down for some reason
+    @Get("/alllogs")
+    async getAllLogs(): Promise<[]> {
+        return await this.activitiesService.getAllLogs();
+    }
+
     // Get activities
-    @Get()
+    @Get("")
     async findAll(): Promise<ActivityList[]> {
         return await this.activitiesService.findAll();
     }
@@ -18,7 +33,7 @@ export class ActivitiesController {
     async findActivity(@Param("id", new ParseIntPipe()) id: number): Promise<ActivityList> {
         const activity = await this.activitiesService.findActivity(id);
         if (activity === undefined) {
-            throw new NotFoundException();
+            throw new NotFoundException("invalid-activity-id-given");
         }
         return activity;
     }
@@ -36,17 +51,41 @@ export class ActivitiesController {
     }
 
     // Post Activity 
-    @Post()
+    @Post("")
     @UsePipes(ValidationPipe)
     async postActivity(@Body() activityListDto: ActivityListDto): Promise<ActivityList> {
         // this has a unique key on the name, so do a search to check that the activity
         // does not already exist (check by name & username)
       return await this.activitiesService.postActivity(activityListDto);  
     }
+
+    // Put Activity 
     
-    // @Get("log")
-    // sort by date (most recent first) by default
-    // sort by activity name & most recent if chosen - e.g. maybe 
-    // have a 'sort' option, where sort is a query param that can be set to true or something.
-    // allow a timeframe - optional date_from date_to query params. 
+
+    // get all logs
+    // @Get("/alllogs")
+    // async getAllLogs(): Promise<string> {
+    //     return await this.activitiesService.getAllLogs();
+    // }
+
+    // get logs in date range
+        // most recent by default 
+
+    // get logs ordered by activity 
+        // or maybe build this into the get all logs activity by having a 'sort' option, 
+        // where sort is a query param that can be set to true or something.
+
+    // get logs for specific activity 
+    @Get("log/:id")
+    async getLogsById(@Param("id", new ParseIntPipe()) id: number): Promise<[]> {
+        // check activity exists
+        const activity = await this.findActivity(id);
+        return await this.activitiesService.getLogsById(activity.id);
+    }
+
+    // Delete Log
+
+    // Post Log
+
+    // Delete Log 
 }
