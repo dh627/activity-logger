@@ -5,6 +5,7 @@ import { Repository, DeleteResult, getRepository } from 'typeorm';
 import { ActivityListDto } from './dto/activity-list.dto';
 import { ActivityLog } from 'src/entities/activity-log.entity';
 import { ActivityLogDto } from './dto/activity-log.dto';
+import { GenericDateDto } from 'src/dto/generic-date.dto';
 @Injectable()
 export class ActivitiesService {
     constructor(
@@ -20,14 +21,6 @@ export class ActivitiesService {
         return await this.activityListRepository.findOne(id);
     }
 
-    async findActivityLog(id: number): Promise<ActivityLog> {
-        return await this.activityLogRepository.findOne(id);
-    }
-
-    async deleteActivity(id: number): Promise<DeleteResult> {
-        return await this.activityListRepository.delete(id);
-    }
-
     async postActivity(postData: ActivityListDto): Promise<ActivityList> {
         const activity: ActivityList = new ActivityList();
         activity.name = postData.name;
@@ -35,14 +28,37 @@ export class ActivitiesService {
         return this.activityListRepository.save(activity);
     }
 
-    async getAllLogs(): Promise<[]> {
-        console.log(new Date());
+
+    async deleteActivity(id: number): Promise<DeleteResult> {
+        return await this.activityListRepository.delete(id);
+    }
+
+    async getAllLogs(genericDateDto: GenericDateDto): Promise<[]> {
+        if (genericDateDto.dateFrom && genericDateDto.dateTo) {
+            // const dateFrom = new Date(`${genericDateDto.dateFrom} 00:00:00`);
+            // const dateTo = new Date(`${genericDateDto.dateTo} 23:59:59`);
+            const dateFrom = genericDateDto.dateFrom + " 00:00:00";
+            const dateTo = genericDateDto.dateTo + " 23:59:59";
+
+            console.log(dateFrom);
+            console.log(dateTo);
+            const data = await getRepository(ActivityLog)
+            .createQueryBuilder("activity_log")
+            .leftJoin(ActivityList, "ali", "activity_log.activity_id = ali.id")
+            .select("activity_log.id, ali.name, activity_log.time, activity_log.date")
+            .where("date BETWEEN :dateFrom AND :dateTo", { dateFrom, dateTo })
+            .orderBy("activity_log.date", "DESC")
+            .getRawMany()
+
+        return await data as [];
+        }
         const data = await getRepository(ActivityLog)
             .createQueryBuilder("activity_log")
             .leftJoin(ActivityList, "ali", "activity_log.activity_id = ali.id")
             .select("activity_log.id, ali.name, activity_log.time, activity_log.date")
             .orderBy("activity_log.date", "DESC")
             .getRawMany()
+
         return await data as [];
     }
 
@@ -57,6 +73,11 @@ export class ActivitiesService {
     return await data as [];
     }
 
+    // make join instead?
+    async findActivityLog(id: number): Promise<ActivityLog> {
+        return await this.activityLogRepository.findOne(id);
+    }
+
     async postActivityLog(postData: ActivityLogDto): Promise<ActivityLog> {
         const activityLog: ActivityLog = new ActivityLog();
         activityLog.activityId = postData.activityId;
@@ -68,7 +89,7 @@ export class ActivitiesService {
         return this.activityLogRepository.save(activityLog);
     }
 
-    async deleteActivityLog(id: number) {
+    async deleteActivityLog(id: number): Promise<DeleteResult> {
         return await this.activityLogRepository.delete(id);
     }
 }
