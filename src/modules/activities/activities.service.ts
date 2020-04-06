@@ -20,6 +20,10 @@ export class ActivitiesService {
         return await this.activityListRepository.findOne(id);
     }
 
+    async findActivityLog(id: number): Promise<ActivityLog> {
+        return await this.activityLogRepository.findOne(id);
+    }
+
     async deleteActivity(id: number): Promise<DeleteResult> {
         return await this.activityListRepository.delete(id);
     }
@@ -62,5 +66,9 @@ export class ActivitiesService {
         // activityLog.date = new Date();
         //  update api at future date to allow date to be optionally added - e.g. if backtracking activities 
         return this.activityLogRepository.save(activityLog);
+    }
+
+    async deleteActivityLog(id: number) {
+        return await this.activityLogRepository.delete(id);
     }
 }

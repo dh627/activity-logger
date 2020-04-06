@@ -84,6 +84,11 @@ export class ActivitiesController {
     }
 
     // Delete Log
+    @Delete("log/:id")
+    async deleteActivityLog(@Param("id", new ParseIntPipe()) id: number) {
+        const activity = await this.activitiesService.findActivityLog(id);
+        return await this.activitiesService.deleteActivityLog(activity.id);
+    }
 
     // Post Log
 
