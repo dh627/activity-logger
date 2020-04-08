@@ -34,43 +34,39 @@ export class ActivitiesService {
     }
 
     async getAllLogs(genericDateDto: GenericDateDto): Promise<[]> {
-        if (genericDateDto.dateFrom && genericDateDto.dateTo) {
-            // const dateFrom = new Date(`${genericDateDto.dateFrom} 00:00:00`);
-            // const dateTo = new Date(`${genericDateDto.dateTo} 23:59:59`);
-            const dateFrom = genericDateDto.dateFrom + " 00:00:00";
-            const dateTo = genericDateDto.dateTo + " 23:59:59";
 
-            console.log(dateFrom);
-            console.log(dateTo);
-            const data = await getRepository(ActivityLog)
-            .createQueryBuilder("activity_log")
-            .leftJoin(ActivityList, "ali", "activity_log.activity_id = ali.id")
-            .select("activity_log.id, ali.name, activity_log.time, activity_log.date")
-            .where("date BETWEEN :dateFrom AND :dateTo", { dateFrom, dateTo })
-            .orderBy("activity_log.date", "DESC")
-            .getRawMany()
-
-        return await data as [];
-        }
-        const data = await getRepository(ActivityLog)
-            .createQueryBuilder("activity_log")
-            .leftJoin(ActivityList, "ali", "activity_log.activity_id = ali.id")
-            .select("activity_log.id, ali.name, activity_log.time, activity_log.date")
-            .orderBy("activity_log.date", "DESC")
-            .getRawMany()
-
-        return await data as [];
-    }
-
-    async getLogsById(id: number): Promise<[]> {
-        const data = await getRepository(ActivityLog)
+        const query = getRepository(ActivityLog)
         .createQueryBuilder("activity_log")
         .leftJoin(ActivityList, "ali", "activity_log.activity_id = ali.id")
         .select("activity_log.id, ali.name, activity_log.time, activity_log.date")
-        .where("activity_log.activityId = :id", { id })
         .orderBy("activity_log.date", "DESC")
-        .getRawMany()
-    return await data as [];
+
+        if (genericDateDto.dateFrom && genericDateDto.dateTo) {
+            const dateFrom = genericDateDto.dateFrom + " 00:00:00";
+            const dateTo = genericDateDto.dateTo + " 23:59:59";
+            query.where("date BETWEEN :dateFrom AND :dateTo", { dateFrom, dateTo })
+
+        }
+        return (await query.getRawMany()) as [];
+    }
+
+    async getLogsById(id: number, genericDateDto): Promise<[]> {
+
+        const query = await getRepository(ActivityLog)
+        .createQueryBuilder("activity_log")
+        .leftJoin(ActivityList, "ali", "activity_log.activity_id = ali.id")
+        .select("activity_log.id, ali.name, activity_log.time, activity_log.date")
+        .orderBy("activity_log.date", "DESC")
+
+        if (genericDateDto.dateFrom && genericDateDto.dateTo) {
+            const dateFrom = genericDateDto.dateFrom + " 00:00:00";
+            const dateTo = genericDateDto.dateTo + " 23:59:59";
+            query.where("activity_log.activityId = :id AND date BETWEEN :dateFrom AND :dateTo", { id, dateFrom, dateTo })
+        } else {
+            query.where("activity_log.activityId = :id", { id })
+        }
+
+        return (await query.getRawMany()) as [];
     }
 
     // make join instead?

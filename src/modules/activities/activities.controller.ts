@@ -74,10 +74,15 @@ export class ActivitiesController {
 
     // GET all logs for specific activity 
     @Get("log/:id")
-    async getLogsById(@Param("id", new ParseIntPipe()) id: number): Promise<[]> {
-        // check activity exists
-        const activity = await this.findActivity(id); // call the service instead? Thats how its done in nathans
-        return await this.activitiesService.getLogsById(activity.id);
+    async getLogsById(
+        @Param("id", new ParseIntPipe()) id: number,
+        @Query() genericDateDto: GenericDateDto
+        ): Promise<[]> {
+        const activity = await this.activitiesService.findActivity(id);
+        if (activity === undefined) {
+            throw new BadRequestException("invalid-activity-id-given");
+        }
+        return await this.activitiesService.getLogsById(activity.id, genericDateDto);
     }
 
     // Get Activity Log by ID
