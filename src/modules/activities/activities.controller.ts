@@ -55,11 +55,8 @@ export class ActivitiesController {
         return await this.activitiesService.deleteActivity(activity.id);
     }
 
-    // // GET all logs
-    // @Get("/alllogs")
-    // async getAllLogs(@Query() genericDateDto: GenericDateDto): Promise<unknown> {
-    //     return await this.activitiesService.getAllLogs(genericDateDto);
-    // }
+    // GET all logs
+    // moved to above
 
     // GET logs in DESC 
         // maybe call getAllLogs() as above, and then sort them with JS
