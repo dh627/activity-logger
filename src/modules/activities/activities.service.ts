@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ActivityList } from 'src/entities/activity-list.entity';
-import { Repository, DeleteResult, getRepository } from 'typeorm';
+import { Repository, DeleteResult, getRepository, UpdateResult } from 'typeorm';
 import { ActivityListDto } from './dto/activity-list.dto';
 import { ActivityLog } from 'src/entities/activity-log.entity';
 import { ActivityLogDto } from './dto/activity-log.dto';
@@ -28,6 +28,10 @@ export class ActivitiesService {
         return this.activityListRepository.save(activity);
     }
 
+    async updateActivity(activity: ActivityList, updateActivityData: ActivityListDto): Promise<UpdateResult> {
+        activity.name = updateActivityData.name;
+        return await this.activityListRepository.update(activity.id, activity);
+    }
 
     async deleteActivity(id: number): Promise<DeleteResult> {
         return await this.activityListRepository.delete(id);
@@ -50,7 +54,7 @@ export class ActivitiesService {
         return (await query.getRawMany()) as [];
     }
 
-    async getLogsById(id: number, genericDateDto): Promise<[]> {
+    async getLogsById(id: number, genericDateDto: GenericDateDto) {
 
         const query = await getRepository(ActivityLog)
         .createQueryBuilder("activity_log")
@@ -61,12 +65,12 @@ export class ActivitiesService {
         if (genericDateDto.dateFrom && genericDateDto.dateTo) {
             const dateFrom = genericDateDto.dateFrom + " 00:00:00";
             const dateTo = genericDateDto.dateTo + " 23:59:59";
-            query.where("activity_log.activityId = :id AND date BETWEEN :dateFrom AND :dateTo", { id, dateFrom, dateTo })
+            query.where("activity_log.activityId = :id AND date BETWEEN :dateFrom AND :dateTo", { id, dateFrom, dateTo });
         } else {
             query.where("activity_log.activityId = :id", { id })
         }
 
-        return (await query.getRawMany()) as [];
+        return (await query.getRawMany());
     }
 
     // make join instead?

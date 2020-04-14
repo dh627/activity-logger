@@ -1,7 +1,7 @@
-import { Controller, Get, ParseIntPipe, Param, NotFoundException, Delete, BadRequestException, Post, Body, UsePipes, ValidationPipe, Query } from '@nestjs/common';
+import { Controller, Get, ParseIntPipe, Param, NotFoundException, Delete, BadRequestException, Post, Body, UsePipes, ValidationPipe, Query, Put } from '@nestjs/common';
 import { ActivitiesService } from './activities.service';
 import { ActivityList } from 'src/entities/activity-list.entity';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 import { ActivityListDto } from './dto/activity-list.dto';
 import { ActivityLog } from 'src/entities/activity-log.entity';
 import { ActivityLogDto } from './dto/activity-log.dto';
@@ -10,19 +10,19 @@ import { GenericDateDto } from 'src/dto/generic-date.dto';
 @Controller('activities')
 export class ActivitiesController {
     constructor(private readonly activitiesService: ActivitiesService) {}
-    // GET all logs
+    // GET all activity logs
     @Get("/alllogs")
     async getAllLogs(@Query() genericDateDto: GenericDateDto): Promise<[]> {
         return await this.activitiesService.getAllLogs(genericDateDto);
     }
-
-    // GET all Activities
-    @Get("")
+    
+    // GET all activities 
+    @Get("/allactivities")
     async findAll(): Promise<ActivityList[]> {
         return await this.activitiesService.findAll();
     }
 
-    // GET Activity by ID
+    // GET activity by ID
     @Get("/:id")
     async findActivity(@Param("id", new ParseIntPipe()) id: number): Promise<ActivityList> {
         const activity = await this.activitiesService.findActivity(id);
@@ -32,8 +32,8 @@ export class ActivitiesController {
         return activity;
     }
 
-    // POST Activity
-    @Post("")
+    // POST activity
+    @Post("postactivity")
     @UsePipes(ValidationPipe)
     async postActivity(@Body() activityListDto: ActivityListDto): Promise<ActivityList> {
         // this has a unique key on the name, so do a search to check that the activity
@@ -41,9 +41,21 @@ export class ActivitiesController {
       return await this.activitiesService.postActivity(activityListDto);  
     }
 
-    // PUT Activity
+    // PUT activity
+    @Put("updateactivity/:id")
+    async updateActivity(
+        @Param("id", new ParseIntPipe()) id: number,
+        @Body() updateActivityData: ActivityListDto
+        ): Promise<UpdateResult> {
+        const activity = await this.activitiesService.findActivity(id);
+        if (activity === undefined) {
+            throw new BadRequestException("invalid-activity-id-given")
+        }
+        return await this.activitiesService.updateActivity(activity, updateActivityData)
+    }
+    // check exists, throw error if not
 
-    // DELETE Activity 
+    // DELETE activity
     @Delete("/:id")
     async deleteActivity(@Param("id", new ParseIntPipe()) id: number): Promise<DeleteResult> {
         const activity = await this.activitiesService.findActivity(id);
@@ -55,34 +67,7 @@ export class ActivitiesController {
         return await this.activitiesService.deleteActivity(activity.id);
     }
 
-    // GET all logs
-    // moved to above
-
-    // GET logs in DESC 
-        // maybe call getAllLogs() as above, and then sort them with JS
-
-    // GET logs in date range
-        // most recent by default 
-
-    // GET logs ordered by activity 
-        // or maybe build this into the get all logs activity by having a 'sort' option, 
-        // where sort is a query param that can be set to true or something.
-        // Or maybe call getAllLogs() as above, and then sort them with JS
-
-    // GET all logs for specific activity 
-    @Get("log/:id")
-    async getLogsById(
-        @Param("id", new ParseIntPipe()) id: number,
-        @Query() genericDateDto: GenericDateDto
-        ): Promise<[]> {
-        const activity = await this.activitiesService.findActivity(id);
-        if (activity === undefined) {
-            throw new BadRequestException("invalid-activity-id-given");
-        }
-        return await this.activitiesService.getLogsById(activity.id, genericDateDto);
-    }
-
-    // Get Activity Log by ID
+    // GET specific activity
     // make the service a join instead?
     @Get("activitylog/:id")
     async findActivityLog(@Param("id", new ParseIntPipe()) id: number) {
@@ -95,7 +80,20 @@ export class ActivitiesController {
         return activityLog;
     }
 
-    // POST Activity Log
+    // GET all logs of a specific activity
+    @Get("logs/:id")
+    async getLogsById(
+        @Param("id", new ParseIntPipe()) id: number,
+        @Query() genericDateDto: GenericDateDto
+        ) {
+        const activity = await this.activitiesService.findActivity(id);
+        if (activity === undefined) {
+            throw new BadRequestException("invalid-activity-id-given");
+        }
+        return await this.activitiesService.getLogsById(activity.id, genericDateDto);
+    }
+
+    // POST activity log
     @Post("activitylog")
     async postActivityLog(@Body() activityLogDto: ActivityLogDto): Promise<ActivityLog> {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -103,12 +101,17 @@ export class ActivitiesController {
         return await this.activitiesService.postActivityLog(activityLogDto);
     }
 
-    // PUT Activity Log
+    // PUT activity log
 
-    // Delete Activity Log
+    // DELETE activity log
     @Delete("log/:id")
     async deleteActivityLog(@Param("id", new ParseIntPipe()) id: number): Promise<DeleteResult> {
         const activity = await this.activitiesService.findActivityLog(id);
         return await this.activitiesService.deleteActivityLog(activity.id);
     }
 }
+
+    // GET logs ordered by activity 
+        // or maybe build this into the get all logs activity by having a 'sort' option, 
+        // where sort is a query param that can be set to true or something.
+        // Or maybe call getAllLogs() as above, and then sort them with JS
