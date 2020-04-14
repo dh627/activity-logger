@@ -53,7 +53,6 @@ export class ActivitiesController {
         }
         return await this.activitiesService.updateActivity(activity, updateActivityData)
     }
-    // check exists, throw error if not
 
     // DELETE activity
     @Delete("/:id")
@@ -96,17 +95,33 @@ export class ActivitiesController {
     // POST activity log
     @Post("activitylog")
     async postActivityLog(@Body() activityLogDto: ActivityLogDto): Promise<ActivityLog> {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const activity = await this.findActivity(activityLogDto.activityId);
+        const activity = await this.activitiesService.findActivity(activityLogDto.activityId);
+        if (activity === undefined) {
+            throw new BadRequestException("invalid-activity-id-given");
+        }
         return await this.activitiesService.postActivityLog(activityLogDto);
     }
 
     // PUT activity log
+    @Put("updateactivitylog/:id")
+    async updateActivityLog(
+        @Param("id", new ParseIntPipe()) id: number,
+        @Body() updateActivityLogData: ActivityLogDto
+    ) {
+        const activityLog = await this.activitiesService.findActivityLog(id);
+        if (activityLog === undefined) {
+            throw new BadRequestException("invalid-activity-log-id-given");
+        }
+        return await this.activitiesService.updateActivityLog(activityLog, updateActivityLogData);
+    }
 
     // DELETE activity log
     @Delete("log/:id")
     async deleteActivityLog(@Param("id", new ParseIntPipe()) id: number): Promise<DeleteResult> {
         const activity = await this.activitiesService.findActivityLog(id);
+        if (activity === undefined) {
+            throw new BadRequestException("invalid-activity-log-id-given");
+        }
         return await this.activitiesService.deleteActivityLog(activity.id);
     }
 }

@@ -71,11 +71,19 @@ export class ActivitiesService {
         }
 
         return (await query.getRawMany());
+        // add type, remember that returning data as [] caused problems - perhaps define a model
+        // of what this data should look like 
     }
 
     // make join instead?
-    async findActivityLog(id: number): Promise<ActivityLog> {
-        return await this.activityLogRepository.findOne(id);
+    async findActivityLog(id: number) {
+        const query = await getRepository(ActivityLog)
+        .createQueryBuilder("activity_log")
+        .leftJoin(ActivityList, "ali", "activity_log.activity_id = ali.id")
+        .select("activity_log.id, activity_log.activity_id, ali.name, activity_log.time, activity_log.date")
+        .where("activity_log.id = :id", { id})
+        .getRawOne()
+        return query; 
     }
 
     async postActivityLog(postData: ActivityLogDto): Promise<ActivityLog> {
@@ -87,6 +95,17 @@ export class ActivitiesService {
         // activityLog.date = new Date();
         //  update api at future date to allow date to be optionally added - e.g. if backtracking activities 
         return this.activityLogRepository.save(activityLog);
+    }
+
+    async updateActivityLog(activityLog: ActivityLog, updateLogData: ActivityLogDto) {
+        // note - can enter an invalid activityId here, maybe make it call a service to ensure it's valid
+        // - though on the front end i guess it'll be a drop down list of activities 
+        // possibly amend this api so that only time can be updated - date and activity id should always
+        // be right 
+        activityLog.activityId = updateLogData.activityId;
+        activityLog.time = updateLogData.time;
+        activityLog.date = updateLogData.date;
+        return this.activityLogRepository.update(activityLog.id, activityLog);
     }
 
     async deleteActivityLog(id: number): Promise<DeleteResult> {
