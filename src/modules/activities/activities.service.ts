@@ -62,7 +62,7 @@ export class ActivitiesService {
         .select("activity_log.id, ali.name, activity_log.time, activity_log.date")
         .orderBy("activity_log.date", "DESC")
 
-        if (genericDateDto.dateFrom && genericDateDto.dateTo) {
+        if (genericDateDto !== undefined && genericDateDto.dateFrom && genericDateDto.dateTo) {
             const dateFrom = genericDateDto.dateFrom + " 00:00:00";
             const dateTo = genericDateDto.dateTo + " 23:59:59";
             query.where("activity_log.activityId = :id AND date BETWEEN :dateFrom AND :dateTo", { id, dateFrom, dateTo });
