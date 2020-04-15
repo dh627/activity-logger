@@ -36,6 +36,7 @@ export class ActivitiesController {
     @Post("postactivity")
     @UsePipes(ValidationPipe)
     async postActivity(@Body() activityListDto: ActivityListDto): Promise<ActivityList> {
+        // make it so that you can only post one activity per activity a day
         // this has a unique key on the name, so do a search to check that the activity
         // does not already exist (check by name & username)
       return await this.activitiesService.postActivity(activityListDto);  
