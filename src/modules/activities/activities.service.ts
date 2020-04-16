@@ -87,6 +87,7 @@ export class ActivitiesService {
     }
 
     async postActivityLog(postData: ActivityLogDto): Promise<ActivityLog> {
+        // Build in option to retroactively add dates! Would need to change entity 
         const activityLog: ActivityLog = new ActivityLog();
         activityLog.activityId = postData.activityId;
         activityLog.time = postData.time;

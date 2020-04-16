@@ -6,10 +6,14 @@ import { ActivityListDto } from './dto/activity-list.dto';
 import { ActivityLog } from 'src/entities/activity-log.entity';
 import { ActivityLogDto } from './dto/activity-log.dto';
 import { GenericDateDto } from 'src/dto/generic-date.dto';
+import { AnalyticsService } from 'src/modules/analytics/analytics.service';
 
 @Controller('activities')
 export class ActivitiesController {
-    constructor(private readonly activitiesService: ActivitiesService) {}
+    constructor(
+        private readonly activitiesService: ActivitiesService,
+        private readonly analyticsService: AnalyticsService
+    ) {}
     // GET all activity logs
     @Get("/alllogs")
     async getAllLogs(@Query() genericDateDto: GenericDateDto): Promise<[]> {
@@ -36,7 +40,6 @@ export class ActivitiesController {
     @Post("postactivity")
     @UsePipes(ValidationPipe)
     async postActivity(@Body() activityListDto: ActivityListDto): Promise<ActivityList> {
-        // make it so that you can only post one activity per activity a day
         // this has a unique key on the name, so do a search to check that the activity
         // does not already exist (check by name & username)
       return await this.activitiesService.postActivity(activityListDto);  
@@ -96,11 +99,27 @@ export class ActivitiesController {
     // POST activity log
     @Post("activitylog")
     async postActivityLog(@Body() activityLogDto: ActivityLogDto): Promise<ActivityLog> {
+        // make it so that you can only post one activity per activity a day - so check date doesnt already exist
+        // perhaps call the calculate streak everytime you post an activity? 
+
         const activity = await this.activitiesService.findActivity(activityLogDto.activityId);
         if (activity === undefined) {
             throw new BadRequestException("invalid-activity-id-given");
         }
-        return await this.activitiesService.postActivityLog(activityLogDto);
+        const activityLog = await this.activitiesService.postActivityLog(activityLogDto);
+
+        const logs = await this.activitiesService.getLogsById(activity.id, undefined);
+
+        if (logs.length === 1) {
+            return activityLog;
+        }
+
+        // perhaps eventually replace this with a cron job? It's a lot of calculations to make...
+        // think about when you have thousands of logs. 
+        await this.analyticsService.calculateStreak(logs, activity.id);
+        // will also need to handle what happens to streak when a user deletes a log?
+
+        return activityLog;
     }
 
     // PUT activity log
@@ -118,6 +137,7 @@ export class ActivitiesController {
 
     // DELETE activity log
     @Delete("log/:id")
+    // need to also run the streak calculator whenever I delete an activity log?
     async deleteActivityLog(@Param("id", new ParseIntPipe()) id: number): Promise<DeleteResult> {
         const activity = await this.activitiesService.findActivityLog(id);
         if (activity === undefined) {
