@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, getRepository } from 'typeorm';
 import { ActivityLog } from 'src/entities/activity-log.entity';
 import * as moment from "moment";
 import { Streak } from 'src/entities/streak.entity';
@@ -55,8 +55,21 @@ export class AnalyticsService {
         // This could be more efficient, as at the moment, it is running the calculation every time. 
     }
 
-    async getTopStreaks(id: number) {
+    async getCurrentStreak(id: number): Promise<Streak> {
+        const formattedDate = moment(new Date()).format("YYYY-MM-DD");
+        return await this.streakRepository.findOne({ where : { activityId: id, endDate: formattedDate }});
+    }
 
+    async getTopStreaks(id: number): Promise<[]> {
+        // not sure why i'm having to specify aliases for column names, they're returning in snake case otherwise (my other querybuilders dont?)
+        const query = await getRepository(Streak)
+        .createQueryBuilder("streak")
+        .select("streak.startDate as startDate, streak.endDate as endDate, streak.count")
+        .where("streak.activityId = :id", { id })
+        .orderBy("count", "DESC")
+        .limit(10)
+        .getRawMany()
+        return query as [];
     }
 
     private async getStreakByStartDate(activityId: number, startDate: string) {
@@ -83,6 +96,8 @@ export class AnalyticsService {
         // will need to get a list of each activity 
         // will then need to get logs of activity for each activity 
         // will then need to run the calculate streak function for each activity 
+        // not sure if I need cron job any more, as when user adds activity it should add to streak, so should
+        // catch everything. 
 
         // what about when I have usernames attached? How will it work if it involves usernames etc?
         // may have to split some of the calculateStreak function out into independent functions
