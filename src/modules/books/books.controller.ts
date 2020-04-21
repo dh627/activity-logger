@@ -1,7 +1,7 @@
-import { Controller, Get, Param, Delete, ParseIntPipe, NotFoundException, Body, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Param, Delete, ParseIntPipe, NotFoundException, Body, Post, UsePipes, ValidationPipe, Put } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Books } from 'src/entities/books.entity';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 import { BooksDto } from './dto/books.dto';
 
 @Controller('books')
@@ -31,6 +31,17 @@ export class BooksController {
         return await this.booksService.postBook(booksDto);
     }
 
+    // Put book 
+    @Put("updatebook/:id")
+    @UsePipes(ValidationPipe)
+    async updateBook(@Param("id", new ParseIntPipe()) id: number, @Body() updateBookDto: BooksDto): Promise<UpdateResult> {
+        const book = await this.booksService.getBook(id);
+        if (book === undefined) {
+            throw new NotFoundException("invalid-book-id-given");
+        }
+        return await this.booksService.updateBook(book, updateBookDto); 
+    }
+
     // Delete book
     @Delete("/:id")
     async deleteBook(@Param("id", new ParseIntPipe()) id: number): Promise<DeleteResult> {
@@ -40,8 +51,6 @@ export class BooksController {
         }
         return await this.booksService.deleteBook(book.id);
     }
-
-    // Put book 
 
     // Get currently reading/read/to read books - have a drop down on front end that
     // passes in one of the enums 

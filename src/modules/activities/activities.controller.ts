@@ -46,6 +46,9 @@ export class ActivitiesController {
       return await this.activitiesService.postActivity(activityListDto);  
     }
 
+    // add a disable activity controller.
+    // make it a put request 
+
     // PUT activity
     @Put("updateactivity/:id")
     async updateActivity(

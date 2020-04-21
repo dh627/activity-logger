@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Books } from 'src/entities/books.entity';
-import { Repository, DeleteResult } from 'typeorm';
+import { Repository, DeleteResult, UpdateResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BooksDto } from './dto/books.dto';
 
@@ -26,6 +26,12 @@ export class BooksService {
         const book: Books = new Books();
         this.assignBookData(book, bookData);
         return this.booksRepository.save(book);
+    }
+
+    async updateBook(book: Books, updateBookData: BooksDto): Promise<UpdateResult> {
+        console.log("Update data", updateBookData);
+        this.assignBookData(book, updateBookData);
+        return this.booksRepository.update(book.id, book);
     }
 
     private assignBookData(book: Books, bookData: BooksDto) {
