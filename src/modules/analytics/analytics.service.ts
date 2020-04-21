@@ -11,10 +11,9 @@ export class AnalyticsService {
         @InjectRepository(Streak) private readonly streakRepository: Repository<Streak>
     ){}
     
-    // need to ensure that this gets called once a day (at end of day) to ensure that streaks get posted to the database 
     async calculateStreak(logs: ActivityLog[], activityId: number) {
         let count = 0;
-        let streakStartDate = logs[logs.length - 1].date; // set start date to be last item in array/furthest date away
+        let streakStartDate = logs[logs.length - 1].date; // set start date to be last item in array/furthest date away by default
 
         logs.forEach((item, index) => {
             // calculate number of ms between current date + n/ith date 
@@ -24,7 +23,7 @@ export class AnalyticsService {
                 count++ 
             } else {
                 // if the day did not meet the condition, then get the date of the last day that did
-                if (index != 0 && streakStartDate === logs[logs.length - 1].date) {   // if this isn't first item in array & startdate hasn't been reset yet - this ensure it only gets reset once
+                if (index != 0 && streakStartDate === logs[logs.length - 1].date) {   // if this isn't first item in array & startdate hasn't been reset yet - this ensure it only gets reset once. Start date will be last date that met the condition of if statement
                     streakStartDate = logs[index - 1].date;
                 }
             }

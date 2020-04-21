@@ -40,14 +40,16 @@ export class Books {
     rating: number;
 
     @Column("date", {
+    // make default empty string?
         nullable: true,
         name: 'start_date'
     })
-    startDate: Date;
+    startDate: Date | string;
 
     @Column("date", {
+        // make default empty string?
         nullable: true,
         name: 'end_date'
     })
-    endDate: Date;
+    endDate: Date | string;
 }

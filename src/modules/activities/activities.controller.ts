@@ -16,6 +16,7 @@ export class ActivitiesController {
     ) {}
     // GET all activity logs
     @Get("/alllogs")
+    // type should be | undefined?
     async getAllLogs(@Query() genericDateDto: GenericDateDto): Promise<[]> {
         return await this.activitiesService.getAllLogs(genericDateDto);
     }
