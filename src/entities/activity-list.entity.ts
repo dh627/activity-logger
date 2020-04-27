@@ -21,4 +21,11 @@ export class ActivityList {
         name: "date_added"
     })
     dateAdded: Date;
+
+    @Column("tinyint", {
+        nullable: false,
+        default: () => "'1'",
+        name: "active"
+        })
+    active: boolean;
 }

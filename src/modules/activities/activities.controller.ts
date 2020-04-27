@@ -69,13 +69,10 @@ export class ActivitiesController {
         if (activity === undefined) {
             throw new BadRequestException("invalid-activity-id-given");
         }
-        // perhaps also delete all records in activity_log table that reference the id being deleted.
-        // or perhaps just disable activity instead? So that activity logs can still be seen for this activity 
         return await this.activitiesService.deleteActivity(activity.id);
     }
 
     // GET specific activity
-    // make the service a join instead?
     @Get("activitylog/:id")
     async findActivityLog(@Param("id", new ParseIntPipe()) id: number) {
         const activityLog = await this.activitiesService.findActivityLog(id);
@@ -136,7 +133,6 @@ export class ActivitiesController {
 
     // DELETE activity log
     @Delete("log/:id")
-    // need to also run the streak calculator whenever I delete an activity log?
     async deleteActivityLog(@Param("id", new ParseIntPipe()) id: number): Promise<DeleteResult> {
         const activity = await this.activitiesService.findActivityLog(id);
         if (activity === undefined) {

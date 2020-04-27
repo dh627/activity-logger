@@ -10,6 +10,7 @@ export class BooksController {
 
     // Get all books
     @Get("getall")
+    // add query parameter - for READ, READING, TO_READ...or maybe new method?
     async getAllBooks(): Promise<Books[] | undefined> {
         return await this.booksService.getAllBooks()
     }

@@ -75,7 +75,6 @@ export class ActivitiesService {
         // of what this data should look like 
     }
 
-    // make join instead?
     async findActivityLog(id: number) {
         const query = await getRepository(ActivityLog)
         .createQueryBuilder("activity_log")
@@ -88,13 +87,10 @@ export class ActivitiesService {
 
     async postActivityLog(postData: ActivityLogDto): Promise<ActivityLog> {
         // Build in option to retroactively add dates! Would need to change entity 
+        // update api at future date to allow date to be optionally added - e.g. if backtracking activities 
         const activityLog: ActivityLog = new ActivityLog();
         activityLog.activityId = postData.activityId;
         activityLog.time = postData.time;
-        // activityLog.date = currentDateUTC();
-        // utc date seems to be returning date from 2 hours ago, rather than 1 hour ago
-        // activityLog.date = new Date();
-        //  update api at future date to allow date to be optionally added - e.g. if backtracking activities 
         return this.activityLogRepository.save(activityLog);
     }
 
