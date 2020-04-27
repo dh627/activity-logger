@@ -10,12 +10,10 @@ export class AnalyticsController {
         private readonly analyticsService: AnalyticsService
         ) {}
 
+    // this method previously calculated the streak, however now it just gets from the database instead, getting the streak
+    // where the current date equals the end date 
     @Get("currentstreak/:id")
-    // now that posting an activity log calls calculateStreak, I could perhaps
-    // make the 'current streak' api just a call to the streak table that gets the 
-    // streak where the current date equals the end date 
     async getCurrentStreak(@Param("id", new ParseIntPipe()) id: number): Promise<Streak | number> {
-        // also check that activity exists
         if (await this.activitiesService.findActivity(id) === undefined) {
             throw new NotFoundException("invalid-activity-id-given");
         }
@@ -28,12 +26,14 @@ export class AnalyticsController {
 
         // if there is only one activity log, and that activity log is from today, return streak as 1
         if (logs.length === 1 && logs[0].date.setUTCHours(0,0,0,0) === new Date().setUTCHours(0,0,0,0)) {    
-            return 1;
+            return 1; // note this returns just a number, whereas count returns an entity. Perhaps also return the date with this too
+            // so that it's easier for the frontend 
         }
 
         const count = await this.analyticsService.getCurrentStreak(id);
 
         // maybe amend somehow so that if you haven't added logs for today (but did for yesterday), it doesn't just show as 0.
+        // perhaps if time is before 23:59:59 & there is a streak that ended in the DB as yesterday, then show that count
         if (count === undefined) {
             return 0
         }
