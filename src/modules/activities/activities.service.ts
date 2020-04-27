@@ -17,6 +17,10 @@ export class ActivitiesService {
         return await this.activityListRepository.find({});
     }
 
+    async findEnabledActivities() {
+        return await this.activityListRepository.find({where: { active: 1 } });
+    }
+
     async findActivity(id: number): Promise<ActivityList> {
         return await this.activityListRepository.findOne(id);
     }

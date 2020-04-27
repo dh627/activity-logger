@@ -12,12 +12,13 @@ export class BooksController {
     @Get("getall")
     // add query parameter - for READ, READING, TO_READ...or maybe new method?
     async getAllBooks(): Promise<Books[] | undefined> {
+        // remove undefined from type & throw not found exception instead
         return await this.booksService.getAllBooks()
     }
 
     // Get book by ID
     @Get("/:id")
-    async getBook(@Param("id", new ParseIntPipe()) id: number) {
+    async getBook(@Param("id", new ParseIntPipe()) id: number): Promise<Books> {
         const book = await this.booksService.getBook(id);
         if (book === undefined) {
             throw new NotFoundException("invalid-book-id-given");

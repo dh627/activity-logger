@@ -27,6 +27,14 @@ export class ActivitiesController {
         return await this.activitiesService.findAll();
     }
 
+    @Get("/enabledactivities")
+    async findEnabledActivities() {
+       return await this.activitiesService.findEnabledActivities();
+    }
+
+    // Enable/Disable activity 
+    // do when doing front end
+
     // GET activity by ID
     @Get("/:id")
     async findActivity(@Param("id", new ParseIntPipe()) id: number): Promise<ActivityList> {
