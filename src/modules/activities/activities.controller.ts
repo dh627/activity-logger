@@ -104,8 +104,6 @@ export class ActivitiesController {
     @Post("activitylog")
     async postActivityLog(@Body() activityLogDto: ActivityLogDto): Promise<ActivityLog> {
         // make it so that you can only post one activity per activity a day - so check date doesnt already exist
-        // perhaps call the calculate streak everytime you post an activity? 
-
         const activity = await this.activitiesService.findActivity(activityLogDto.activityId);
         if (activity === undefined) {
             throw new BadRequestException("invalid-activity-id-given");
@@ -118,10 +116,7 @@ export class ActivitiesController {
             return activityLog;
         }
 
-        // perhaps eventually replace this with a cron job? It's a lot of calculations to make...
-        // think about when you have thousands of logs. 
         await this.analyticsService.calculateStreak(logs, activity.id);
-        // will also need to handle what happens to streak when a user deletes a log?
 
         return activityLog;
     }
